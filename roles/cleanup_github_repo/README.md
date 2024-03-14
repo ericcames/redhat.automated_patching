@@ -15,6 +15,7 @@ software_repository: https://{{personal_access_token}}@github.com/ericcames/RedH
 local_repo: /var/tmp/github/RedHatInsightsPlaybooks
 git_name: ericcames
 git_email: ericcames@msn.com
+personal_access_token: git_hub_token
 ```
 Dependencies
 ------------
