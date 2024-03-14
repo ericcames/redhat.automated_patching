@@ -1,4 +1,4 @@
-get_instance_info
+get_aws_instance_info
 =========
 
 This role will get all AWS Machine Instance Info.
@@ -31,7 +31,7 @@ Example Playbook
 
   roles:
 
-    - name: get_instance_info
+    - name: get_aws_instance_info
 ```
 License
 -------
