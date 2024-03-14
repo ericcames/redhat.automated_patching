@@ -1,5 +1,5 @@
 ---
-- name: Update job template for template
+- name: Update job template
   ansible.builtin.uri:
     url: "https://{{ controller_url }}/api/v2/job_templates/{{ job_template_id }}/?name=Insights%20CVE%20R1000%20\"The%20Remediator\""
     method: PATCH
