@@ -1,0 +1,10 @@
+---
+- name: Patch stuff
+  hosts: localhost
+  connection: local
+
+  roles:
+    - role: get_aws_instance_info
+    - role: get_insights_inventory_id
+    - role: update_change_ticket_worknotes
+    - role: process_cves
