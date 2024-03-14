@@ -1,37 +1,35 @@
-get_aws_instance_info
+update_change_ticket_worknotes
 =========
 
-This role will get all AWS Machine Instance Info.
+This role will updates the change ticket work notes.
 
 Requirements
 ------------
 ```yaml
-Amazon Web Console Account
-Amazon Web Services Credential in Ansible Automation Platform
+Service Now Credential
+Service Now Change ticket number
 ```
 Role Variables
 --------------
 ```yaml
-region: us-west-1
-servername: Linux Web Server
-my_email_address: eames@redhat.com
+ticket_number: 123456
 ```
 Dependencies
 ------------
 ```yaml
-amazon.aws
+servicenow.itsm
 ```
 Example Playbook
 ----------------
 ```yaml
 ---
-- name: Get Amazon Machine info
+- name: Update change ticket work notes
   hosts: localhost
   connection: local
 
   roles:
 
-    - name: get_aws_instance_info
+    - name: update_change_ticket_worknotes
 ```
 License
 -------
