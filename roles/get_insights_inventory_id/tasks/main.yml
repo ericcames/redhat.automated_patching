@@ -1,0 +1,28 @@
+---
+- name: Get my list
+  register: my_host_list
+  ignore_errors: true
+  until: "my_host_list.json.count > 0"
+  retries: 40
+  delay: 10
+  ansible.builtin.uri:
+    url: "https://console.redhat.com/api/inventory/v1/hosts?display_name={{ my_private_dns_name }}"
+    method: GET
+    user: "{{ insights_username }}"
+    password: "{{ insights_password }}"
+    validate_certs: false
+    force_basic_auth: true
+    status_code: 200
+    return_content: true
+    headers:
+      Content-Type: "application/json"
+
+- name: Print out my_insights_ids
+  ansible.builtin.debug:
+    msg: "{{ my_host_list.json.results[0].id }}"
+
+- name: Capture Red Hat Insights inventory id
+  register: my_insights_inventory_id
+  ansible.builtin.set_stats:
+    data:
+      my_insights_inventory_id: "{{ my_host_list.json.results[0].id }}"
