@@ -1,0 +1,5 @@
+---
+software_repository: https://{{personal_access_token}}@github.com/ericcames/RedHatInsightsPlaybooks.git
+local_repo: /var/tmp/github/RedHatInsightsPlaybooks
+git_name: ericcames
+git_email: ericcames@msn.com

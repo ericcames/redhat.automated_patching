@@ -1,0 +1,7 @@
+---
+- name: Cleaning repo
+  hosts: localhost
+  connection: local
+
+  roles:
+    - role: cleanup_github_repo
