@@ -6,8 +6,8 @@ git_email: ericcames@msn.com
 job_template_id: 165
 controller_url: aap.example.com
 project_id: 164
-password: controller_password
-username: controller_username
+controller_password: controller_password
+controller_username: controller_username
 personal_access_token: git_hub_token
 insights_password: 123456
 insights_username: mickey

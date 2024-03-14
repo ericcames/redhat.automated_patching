@@ -184,8 +184,8 @@
   ansible.builtin.uri:
     url: "https://{{ controller_url }}/api/v2/tokens/"
     method: POST
-    user: "{{ username }}"
-    password: "{{ password }}"
+    user: "{{ controller_username }}"
+    password: "{{ controller_password }}"
     validate_certs: no
     force_basic_auth: yes
     status_code: 201

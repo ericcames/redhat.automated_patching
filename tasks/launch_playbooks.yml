@@ -1,0 +1,93 @@
+---
+- name: Update job template for template
+  ansible.builtin.uri:
+    url: "https://{{ controller_url }}/api/v2/job_templates/{{ job_template_id }}/?name=Insights%20CVE%20R1000%20\"The%20Remediator\""
+    method: PATCH
+    headers:
+      Authorization: "Bearer {{ new_token.json.token }}"
+      Content-Type: "application/json"
+    validate_certs: false
+    follow_redirects: all
+    return_content: false
+    body_format: json
+    body: "{{ lookup('ansible.builtin.template', 'templates/job_template_body.j2') }}"
+    status_code: 200
+
+- name: Run job template
+  register: my_job_info
+  ansible.builtin.uri:
+    url: "https://{{ controller_url }}/api/v2/job_templates/{{ job_template_id }}/launch/"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ new_token.json.token }}"
+      Content-Type: "application/json"
+    validate_certs: false
+    follow_redirects: all
+    return_content: false
+    status_code: 201
+
+- name: Update the status for ticket
+  servicenow.itsm.change_request_task:
+    on_hold: false
+    state: "in_progress"
+    number: "{{ item.number }}"
+    other:
+      work_notes: "Launched AAP Job ID: {{ my_job_info.json.id }}"
+
+- name: Update job template back to default playbook
+  ansible.builtin.uri:
+    url: "https://{{ controller_url }}/api/v2/job_templates/{{ job_template_id }}/?name=Insights%20CVE%20R1000%20\"The%20Remediator\""
+    method: PATCH
+    headers:
+      Authorization: "Bearer {{ new_token.json.token }}"
+      Content-Type: "application/json"
+    validate_certs: false
+    follow_redirects: all
+    return_content: false
+    body_format: json
+    body: "{{ lookup('ansible.builtin.template', 'templates/job_template_body_default.j2') }}"
+    status_code: 200
+
+- name: Checking the status of job before moving on to the next playbook"
+  register: my_job_status
+  until: "'successful' in my_job_status.json.status"
+  ignore_errors: true
+  retries: 60
+  delay: 10
+  ansible.builtin.uri:
+    url: "https://{{ controller_url }}/api/v2/jobs/{{ my_job_info.json.id }}"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ new_token.json.token }}"
+      Content-Type: "application/json"
+    validate_certs: false
+    follow_redirects: all
+    return_content: false
+    status_code: 200
+
+- name: "Get job related events for job id: {{ my_job_info.json.id }}"
+  register: job_related_events
+  ansible.builtin.uri:
+    url: "https://{{ controller_url }}/api/v2/jobs/{{ my_job_info.json.id }}/job_events/"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ new_token.json.token }}"
+      Content-Type: "application/json"
+    validate_certs: false
+    follow_redirects: all
+    return_content: false
+    status_code: 200
+
+# - name: print job_related_events
+#   loop: "{{ job_related_events['results'] }}"
+#   ansible.builtin.debug:
+#     msg: "{{item}}"
+
+- name: Closing task
+  servicenow.itsm.change_request_task:
+    state: closed
+    number: "{{ item.number }}"
+    close_code: "successful"
+    close_notes: "AAP Job ID: {{ my_job_info.json.id }} finished with a status of: {{ my_job_status.json.status }}"
+    other:
+      work_notes: "Completed AAP Job ID: {{ my_job_info.json.id }}"
