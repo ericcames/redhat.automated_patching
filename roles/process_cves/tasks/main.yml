@@ -1,21 +1,21 @@
 ---
 - name: Get my list of CVEs
   register: my_cve_list
-  until: "my_cve_list.status == 200"
+  until: my_cve_list.status == 200
   ignore_errors: true
   retries: 40
   delay: 10
   ansible.builtin.uri:
-    url: "https://console.redhat.com/api/vulnerability/v1/systems/{{ my_insights_inventory_id }}/cves?limit=30"
+    url: https://console.redhat.com/api/vulnerability/v1/systems/{{ my_insights_inventory_id }}/cves?limit=30
     method: GET
     user: "{{ insights_username }}"
     password: "{{ insights_password }}"
-    validate_certs: no
-    force_basic_auth: yes
+    validate_certs: false
+    force_basic_auth: true
     status_code: 200
-    return_content: yes
+    return_content: true
     headers:
-      Content-Type: "application/json"
+      Content-Type: application/json
 
 - name: Create a change task for each cve with a playbook
   register: task_numbers_are_here
@@ -26,12 +26,12 @@
     change_request_number: "{{ ticket_number }}"
     type: implementation
     state: open
-    assigned_to: "hercules"
-    assignment_group: "Ansible West Tigers"
+    assigned_to: hercules
+    assignment_group: Ansible West Tigers
     short_description: "vulnerabilities:{{ item.attributes.synopsis }} on Red Hat Insights Inventory ID: {{ my_insights_inventory_id }}"
     description: "{{ item.attributes.description }}"
     on_hold: true
-    hold_reason: "Waiting for Ansible Automation Platform to run the remediation playbook."
+    hold_reason: Waiting for Ansible Automation Platform to run the remediation playbook.
     other:
       approval: approved
       user_input: "{{ item.attributes.synopsis }}"
@@ -40,13 +40,9 @@
   loop: "{{ task_numbers_are_here['results'] }}"
   when: item.changed != false
   ansible.builtin.set_fact:
-    chg_tkt_list: "{{chg_tkt_list|default([]) + [{ 'number' : item.record.number,
-                                                    'short_description' : item.record.short_description,
-                                                    'task_sys_id' : item.record.sys_id,
-                                                    'change_request_sys_id' : item.record.change_request,
-                                                    'cmdb_ci' : item.record.cmdb_ci,
-                                                    'insights_id' : my_insights_inventory_id,
-                                                    'cve_id' : item.record.user_input }] }}"
+    chg_tkt_list: "{{chg_tkt_list|default([]) + [{ 'number' : item.record.number, 'short_description' : item.record.short_description, 'task_sys_id' : item.record.sys_id,
+      'change_request_sys_id' : item.record.change_request, 'cmdb_ci' : item.record.cmdb_ci, 'insights_id' : my_insights_inventory_id, 'cve_id' : item.record.user_input
+      }] }}"
 
 - name: print out Change Task Tickets list
   ansible.builtin.debug:
@@ -58,7 +54,7 @@
   when: item.attributes.remediation != 2
   servicenow.itsm.problem:
     state: new
-    short_description: "Red Hat Insights vulnerabilities:{{ item.attributes.synopsis }} there is no available Ansible Playbook :-0"
+    short_description: Red Hat Insights vulnerabilities:{{ item.attributes.synopsis }} there is no available Ansible Playbook :-0
     description: "{{ item.attributes.description }}"
     impact: medium
     urgency: low
@@ -69,31 +65,29 @@
   loop: "{{ problem_numbers_are_here['results'] }}"
   when: item.changed != false
   ansible.builtin.set_fact:
-    pbm_tkt_list: "{{pbm_tkt_list|default([]) + [{ 'number' : item.record.number,
-                                                    'short_description' : item.record.short_description,
-                                                    'sys_id' : item.record.sys_id,
-                                                    'cmdb_ci' : item.record.user_input }] }}"
+    pbm_tkt_list: "{{pbm_tkt_list|default([]) + [{ 'number' : item.record.number, 'short_description' : item.record.short_description, 'sys_id' : item.record.sys_id,
+      'cmdb_ci' : item.record.user_input }] }}"
 
 - name: Generate playbooks to remediate vulnerabilities
   register: my_playbooks
-  until: "my_playbooks.status == 200"
+  until: my_playbooks.status == 200
   ignore_errors: true
   retries: 20
   delay: 10
   loop: "{{ chg_tkt_list }}"
   ansible.builtin.uri:
-    url: "https://cloud.redhat.com/api/remediations/v1/playbook"
+    url: https://cloud.redhat.com/api/remediations/v1/playbook
     method: POST
     user: "{{ insights_username }}"
     password: "{{ insights_password }}"
-    validate_certs: no
-    force_basic_auth: yes
+    validate_certs: false
+    force_basic_auth: true
     status_code: 200
-    return_content: yes
+    return_content: true
     headers:
-      Content-Type: "application/json"
-      accept: "text/vnd.yaml"
-      Connection: "keep-alive"
+      Content-Type: application/json
+      accept: text/vnd.yaml
+      Connection: keep-alive
     body_format: json
     body: "{{ lookup('ansible.builtin.template','templates/playbook_generator_body.j2') }}"
 
@@ -106,7 +100,7 @@
   loop: "{{ my_playbooks['results'] }}"
   servicenow.itsm.change_request_task:
     on_hold: false
-    state: "in_progress"
+    state: in_progress
     number: "{{ item.item.number }}"
     other:
       work_notes: "{{ item.content }}"
@@ -124,8 +118,8 @@
   ansible.builtin.git:
     repo: "{{ software_repository }}"
     dest: "{{ local_repo }}"
-    accept_hostkey: yes
-    force: yes
+    accept_hostkey: true
+    force: true
 
 - name: Write the playbooks to the local_repo
   loop: "{{ my_playbooks['results'] }}"
@@ -142,21 +136,21 @@
 
 - name: Add any new playbooks to the software_repository
   delegate_to: localhost
-  changed_when: False
+  changed_when: false
   run_once: true
   args:
     chdir: "{{ local_repo }}"
-  ansible.builtin.shell: "git add *"
+  ansible.builtin.shell: git add *
 
 - name: Get the status of the repository
   register: status_results
-  changed_when: False
+  changed_when: false
   ignore_errors: true
   delegate_to: localhost
   run_once: true
   args:
     chdir: "{{ local_repo }}"
-  ansible.builtin.shell: "git status"
+  ansible.builtin.shell: git status
 
 - name: Commit the changes
   when: status_results.stdout is search('Changes')
@@ -169,7 +163,7 @@
     GIT_AUTHOR_EMAIL: "{{ git_email | default(omit) }}"
   args:
     chdir: "{{ local_repo }}"
-  ansible.builtin.shell: "git commit -am 'Changed'"
+  ansible.builtin.shell: git commit -am 'Changed'
 
 - name: Push the changes
   delegate_to: localhost
@@ -177,34 +171,34 @@
   when: software_repository is defined
   args:
     chdir: "{{ local_repo }}"
-  ansible.builtin.shell: "git push"
+  ansible.builtin.shell: git push
 
 - name: Get an AAP API Token and store it as new_token
   register: new_token
   ansible.builtin.uri:
-    url: "https://{{ controller_url }}/api/v2/tokens/"
+    url: https://{{ controller_url }}/api/v2/tokens/
     method: POST
     user: "{{ controller_username }}"
     password: "{{ controller_password }}"
-    validate_certs: no
-    force_basic_auth: yes
+    validate_certs: false
+    force_basic_auth: true
     status_code: 201
-    return_content: yes
+    return_content: true
 
-  # - name: Print out the new token
-  #   ansible.builtin.debug:
-  #     msg: "{{ new_token.json.token }}"
+# - name: Print out the new token
+#   ansible.builtin.debug:
+#     msg: "{{ new_token.json.token }}"
 
 - name: Kick off a project sync
   ansible.builtin.uri:
-    url: "https://{{ controller_url }}/api/v2/projects/{{ project_id }}/update/"
+    url: https://{{ controller_url }}/api/v2/projects/{{ project_id }}/update/
     headers:
-      Authorization: "Bearer {{ new_token.json.token }}"
-      Content-Type: "application/json"
-    validate_certs: no
+      Authorization: Bearer {{ new_token.json.token }}
+      Content-Type: application/json
+    validate_certs: false
     follow_redirects: all
-    return_content: no
-    method: "POST"
+    return_content: false
+    method: POST
     status_code: 202
 
 - name: Pausing for 20 seconds to allow for the project sync up to finish
