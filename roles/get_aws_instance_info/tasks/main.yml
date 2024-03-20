@@ -4,14 +4,14 @@
   amazon.aws.ec2_instance_info:
     region: "{{ region }}"
     filters:
-      "tag:Name": "{{ servername }}"
-      instance-state-name: [ "running"]
-      "tag:Contact": "{{ my_email_address }}"
+      tag:Name: "{{ servername }}"
+      instance-state-name: [running]
+      tag:Contact: "{{ my_email_address }}"
 
 - name: Printing out instance_info.instances[0].instance_id
   when: instance_info.instances[0].instance_id is defined
   ansible.builtin.debug:
-      msg: "{{ instance_info.instances[0].instance_id }}"
+    msg: "{{ instance_info.instances[0].instance_id }}"
 
 - name: Capture public dns name
   register: my_server
