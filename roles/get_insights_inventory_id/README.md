@@ -7,6 +7,7 @@ Requirements
 ------------
 ```yaml
 Red Hat Hybrid Cloud Console account
+RHEL Servers with Insights client enabled
 ```
 console.redhat.com
 
