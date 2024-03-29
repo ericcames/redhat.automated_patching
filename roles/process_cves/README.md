@@ -1,37 +1,38 @@
-get_aws_instance_info
+process_cves
 =========
 
-This role will get all AWS Machine Instance Info.
+This role will patch cves on target machine
 
 Requirements
 ------------
 ```yaml
-Amazon Web Console Account
-Amazon Web Services Credential in Ansible Automation Platform
+RHEL Servers with Insights client enabled
+Software repo with token
 ```
 Role Variables
 --------------
 ```yaml
-region: us-west-1
-servername: Linux Web Server
-my_email_address: eames@redhat.com
+software_repository: https://{{personal_access_token}}@github.com/ericcames/RedHatInsightsPlaybooks.git
+local_repo: /var/tmp/github/RedHatInsightsPlaybooks
+git_name: ericcames
+git_email: ericcames@msn.com
+job_template_id: 165
 ```
 Dependencies
 ------------
 ```yaml
-amazon.aws
 ```
 Example Playbook
 ----------------
 ```yaml
 ---
-- name: Get Amazon Machine info
+- name: Process CVES
   hosts: localhost
   connection: local
 
   roles:
 
-    - name: get_aws_instance_info
+    - name: process_cves
 ```
 License
 -------
