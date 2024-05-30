@@ -74,7 +74,6 @@
   ignore_errors: true
   retries: 20
   delay: 10
-  loop: "{{ chg_tkt_list }}"
   ansible.builtin.uri:
     url: https://cloud.redhat.com/api/remediations/v1/playbook
     method: POST
@@ -82,7 +81,7 @@
     password: "{{ insights_password }}"
     validate_certs: false
     force_basic_auth: true
-    status_code: 200
+    status_code: "{{ chg_tkt_list }}"
     return_content: true
     headers:
       Content-Type: application/json

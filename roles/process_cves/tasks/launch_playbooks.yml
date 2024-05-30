@@ -30,7 +30,7 @@
   servicenow.itsm.change_request_task:
     on_hold: false
     state: in_progress
-    number: "{{ item.number }}"
+    number: "{{ number }}"
     other:
       work_notes: "Launched AAP Job ID: {{ my_job_info.json.id }}"
 
@@ -86,7 +86,7 @@
 - name: Closing task
   servicenow.itsm.change_request_task:
     state: closed
-    number: "{{ item.number }}"
+    number: "{{ number }}"
     close_code: successful
     close_notes: "AAP Job ID: {{ my_job_info.json.id }} finished with a status of: {{ my_job_status.json.status }}"
     other:
